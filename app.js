@@ -8,6 +8,7 @@
 var $ = function(s,ctx){ return (ctx||document).querySelector(s); };
 var $$ = function(s,ctx){ return [].slice.call((ctx||document).querySelectorAll(s)); };
 var esc = function(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); };
+var pad2 = function(n){ return n<10?'0'+n:n; };
 var STORE = 'workbench_v3';
 function load(){ try{ return JSON.parse(localStorage.getItem(STORE))||{}; }catch(e){ return {}; } }
 function save(d){ try{ localStorage.setItem(STORE, JSON.stringify(d)); }catch(e){} }
@@ -199,6 +200,26 @@ function renderFitness(){
   html += '<p style="margin-top:6px"><b>注意</b>：腹直肌分离超过2指时，禁止做卷腹、仰卧起坐、平板支撑等增加腹压的动作！</p>';
   html += '</div></section>';
 
+  // 运动计时器
+  var timerMin = get('fitness_timer_min',30);
+  html += '<section class="card" style="text-align:center">';
+  html += '<h2 class="card-title"><span class="dot" style="background:#5a9a4a"></span>运动计时器</h2>';
+  html += '<div style="position:relative;width:160px;height:160px;margin:10px auto">';
+  html += '<svg viewBox="0 0 120 120" style="width:100%;height:100%;transform:rotate(-90deg)">';
+  html += '<circle cx="60" cy="60" r="52" fill="none" stroke="#e8e8e0" stroke-width="8"/>';
+  html += '<circle id="fitTimerRing" cx="60" cy="60" r="52" fill="none" stroke="#5a9a4a" stroke-width="8" stroke-linecap="round" stroke-dasharray="326.73" stroke-dashoffset="0"/>';
+  html += '</svg>';
+  html += '<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">';
+  html += '<div id="fitTimerDisplay" style="font-size:30px;font-weight:700;color:#333;line-height:1" contenteditable="true" spellcheck="false">'+pad2(timerMin)+':00</div>';
+  html += '<div style="font-size:12px;color:#999;margin-top:4px">剩余时间</div>';
+  html += '</div></div>';
+  html += '<div style="display:flex;gap:10px;justify-content:center;margin-top:6px">';
+  html += '<button id="fitTimerBtn" style="padding:10px 24px;background:#5a9a4a;color:#fff;border:none;border-radius:999px;font-size:15px;font-weight:600">开始锻炼</button>';
+  html += '<button id="fitTimerReset" style="padding:10px 22px;background:#eee;color:#666;border:none;border-radius:999px;font-size:15px;font-weight:500">重置</button>';
+  html += '</div>';
+  html += '<div style="font-size:11px;color:#999;margin-top:8px">点击时间可修改分钟数</div>';
+  html += '</section>';
+
   // 训练前热身
   html += '<section class="card"><h2 class="card-title"><span class="dot" style="background:#e07856"></span>训练前热身（5分钟）</h2>';
   html += '<div style="font-size:13px;color:#555;line-height:1.9">';
@@ -316,6 +337,89 @@ function bindFitness(){
       set('fitness_week',weekLog);
     });
   });
+
+  // 运动计时器
+  (function(){
+    var display = $('#fitTimerDisplay');
+    var ring = $('#fitTimerRing');
+    var btn = $('#fitTimerBtn');
+    var resetBtn = $('#fitTimerReset');
+    if(!display || !btn) return;
+
+    var totalSeconds = 0, remaining = 0, timerId = null, running = false;
+    var ringLen = 2 * Math.PI * 52; // ~326.73
+
+    function parseDisplay(){
+      var parts = display.textContent.split(':');
+      var m = parseInt(parts[0])||0, s = parseInt(parts[1])||0;
+      return m*60+s;
+    }
+
+    function updateDisplay(sec){
+      var m = Math.floor(sec/60), s = sec%60;
+      display.textContent = pad2(m)+':'+pad2(s);
+      var offset = totalSeconds>0 ? ringLen * (sec/totalSeconds) : ringLen;
+      ring.setAttribute('stroke-dashoffset', ringLen - offset);
+    }
+
+    function resetTimer(){
+      clearInterval(timerId);
+      running = false;
+      timerId = null;
+      btn.textContent = '开始锻炼';
+      var savedMin = get('fitness_timer_min',30);
+      totalSeconds = savedMin * 60;
+      remaining = totalSeconds;
+      updateDisplay(remaining);
+    }
+
+    function toggleTimer(){
+      if(running){
+        clearInterval(timerId);
+        running = false;
+        timerId = null;
+        btn.textContent = '继续锻炼';
+      } else {
+        if(remaining<=0) resetTimer();
+        running = true;
+        btn.textContent = '暂停';
+        timerId = setInterval(function(){
+          remaining--;
+          updateDisplay(remaining);
+          if(remaining<=0){
+            clearInterval(timerId);
+            running = false;
+            timerId = null;
+            btn.textContent = '完成';
+            feedCat(2,'运动计时完成 +2 鸡腿！');
+          }
+        },1000);
+      }
+    }
+
+    // 点击时间编辑分钟数
+    display.addEventListener('click',function(){
+      if(running) return;
+      var parts = display.textContent.split(':');
+      var currentMin = parseInt(parts[0])||30;
+      var newMin = prompt('设置锻炼时长（分钟）：', currentMin);
+      if(newMin !== null){
+        newMin = parseInt(newMin);
+        if(newMin && newMin>0 && newMin<=180){
+          set('fitness_timer_min', newMin);
+          totalSeconds = newMin*60;
+          remaining = totalSeconds;
+          updateDisplay(remaining);
+        }
+      }
+    });
+
+    btn.addEventListener('click', toggleTimer);
+    resetBtn.addEventListener('click', resetTimer);
+
+    // 初始化
+    resetTimer();
+  })();
 }
 
 /* ========== 4. 工作 ========== */
