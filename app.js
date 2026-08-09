@@ -1168,112 +1168,116 @@ var PODCAST_FEEDS = [
 
 function loadBlog(){
   var today = todayKey();
-  var history = get('podcast_history',[]); // [{date, pods:[{platform,show,title,desc,url,appUrl,icon,color}]}]
+  var history = get('podcast_history',[]);
+
+  // 兼容旧格式：旧数据是 {date, pod:{...}}，新数据是 {date, pods:[...]}
+  history = history.filter(function(h){ return h && h.date; }).map(function(h){
+    if(h.pods && Array.isArray(h.pods)) return h;
+    if(h.pod) return {date:h.date, pods:[h.pod]};
+    return null;
+  }).filter(function(h){ return h!==null; });
+  set('podcast_history', history);
+
   var todayEntry = history.find(function(h){ return h.date===today; });
 
   if(!todayEntry){
-    // 今天还没推送，从三个平台各选一条
+    // 默认先显示加载中，然后异步抓取
     var pods = [];
 
-    // 1. 得到：轮换选取
+    // 1. 得到：轮换选取（不依赖网络）
     var dedaoFeeds = PODCAST_FEEDS.filter(function(f){ return f.platform==='得到'; });
     var dedaoIdx = history.length % dedaoFeeds.length;
     var dedao = dedaoFeeds[dedaoIdx];
-    pods.push({
-      platform:'得到', show:dedao.show, title:dedao.staticTitle,
-      desc:dedao.desc, url:dedao.appUrl, appUrl:dedao.appUrl,
-      app:'得到App', icon:'D', color:'#9b6acf'
-    });
-
-    // 2. 小宇宙 + Apple Podcasts：通过 RSS 抓取最新一期
-    var rssFeeds = PODCAST_FEEDS.filter(function(f){ return f.rss; });
-    var shuffled = rssFeeds.sort(function(){ return Math.random()-0.5; });
-    // 尝试抓取，每个平台至少一条
-    var xiaoyuzhouPicked = false, applePicked = false;
-    var pickIdx = 0;
-
-    function tryFetchNext(){
-      if(pickIdx >= shuffled.length || (xiaoyuzhouPicked && applePicked)){
-        finishLoad(pods);
-        return;
-      }
-      var feed = shuffled[pickIdx++];
-      var needThis = (feed.platform==='小宇宙' && !xiaoyuzhouPicked) || (feed.platform==='Apple Podcasts' && !applePicked);
-      // 如果该平台已选过，跳过
-      if((feed.platform==='小宇宙' && xiaoyuzhouPicked) || (feed.platform==='Apple Podcasts' && applePicked)){
-        tryFetchNext();
-        return;
-      }
-      fetchRSSPodcast(feed, function(item){
-        if(item){
-          if(feed.platform==='小宇宙') xiaoyuzhouPicked = true;
-          if(feed.platform==='Apple Podcasts') applePicked = true;
-          pods.push(item);
-        }
-        tryFetchNext();
+    if(dedao){
+      pods.push({
+        platform:'得到', show:dedao.show, title:dedao.staticTitle,
+        desc:dedao.desc, url:dedao.appUrl, appUrl:dedao.appUrl,
+        app:'得到App', icon:'D', color:'#9b6acf'
       });
     }
 
-    // 同时发起前几个请求加速
-    var xiaoyuzhouFeeds = shuffled.filter(function(f){ return f.platform==='小宇宙'; });
-    var appleFeeds = shuffled.filter(function(f){ return f.platform==='Apple Podcasts'; });
+    // 2. 小宇宙 + Apple Podcasts：并行 RSS 抓取
+    var xiaoyuzhouFeeds = PODCAST_FEEDS.filter(function(f){ return f.platform==='小宇宙' && f.rss; });
+    var appleFeeds = PODCAST_FEEDS.filter(function(f){ return f.platform==='Apple Podcasts' && f.rss; });
 
-    // 随机选一个小宇宙和一个 Apple
-    var xyFeed = xiaoyuzhouFeeds[0];
-    var apFeed = appleFeeds[0];
+    function randomFeed(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+    var xyFeed = randomFeed(xiaoyuzhouFeeds);
+    var apFeed = randomFeed(appleFeeds);
     var pending = 0;
     var results = {};
 
-    if(xyFeed){ pending++; fetchRSSPodcast(xyFeed, function(item){ results.xy = item; if(--pending===0) finishLoad2(pods, results); }); }
-    if(apFeed){ pending++; fetchRSSPodcast(apFeed, function(item){ results.ap = item; if(--pending===0) finishLoad2(pods, results); }); }
-    if(pending===0) finishLoad2(pods, results);
-
-    function finishLoad2(pods, results){
-      if(results.xy) pods.push(results.xy);
-      if(results.ap) pods.push(results.ap);
-      finishLoad(pods);
+    function maybeFinish(){
+      if(--pending===0){
+        if(results.xy) pods.push(results.xy);
+        if(results.ap) pods.push(results.ap);
+        // 保存并渲染
+        todayEntry = {date:today, pods:pods};
+        history.unshift(todayEntry);
+        if(history.length>200) history = history.slice(0,200);
+        set('podcast_history', history);
+        renderBlogPods(pods, history, today);
+      }
     }
-  } else {
-    finishLoad(todayEntry.pods);
-  }
 
-  function finishLoad(pods){
-    // 保存到历史
-    if(!todayEntry){
+    // 超时兜底：10 秒后不管 RSS 是否返回，都显示已有内容
+    setTimeout(function(){
+      if(pending===0) return;
+      pending = 0;
       todayEntry = {date:today, pods:pods};
       history.unshift(todayEntry);
       if(history.length>200) history = history.slice(0,200);
       set('podcast_history', history);
+      renderBlogPods(pods, history, today);
+    }, 10000);
+
+    if(xyFeed){ pending++; fetchRSSPodcast(xyFeed, function(item){ results.xy = item; maybeFinish(); }); }
+    if(apFeed){ pending++; fetchRSSPodcast(apFeed, function(item){ results.ap = item; maybeFinish(); }); }
+
+    // 如果没有 RSS 源，直接渲染
+    if(pending===0){
+      todayEntry = {date:today, pods:pods};
+      history.unshift(todayEntry);
+      set('podcast_history', history);
+      renderBlogPods(pods, history, today);
     }
+  } else {
+    renderBlogPods(todayEntry.pods, history, today);
+  }
+}
 
-    // 渲染今日推荐
-    var html = pods.map(function(p){
-      return renderPodItem(p, true);
+// 渲染播客内容
+function renderBlogPods(pods, history, today){
+  pods = pods || [];
+  if(!Array.isArray(pods)) pods = [];
+
+  // 渲染今日推荐
+  var html = pods.map(function(p){ return renderPodItem(p, true); }).join('');
+  if(html==='') html = '<p style="text-align:center;color:#bbb;padding:16px 0;font-size:13px">暂无推荐</p>';
+  $('#todayPod').innerHTML = html;
+
+  // 渲染往期精选
+  var past = (history||[]).filter(function(h){ return h.date!==today; });
+  if(past.length===0){
+    $('#historyPod').innerHTML = '<p style="text-align:center;color:#bbb;padding:16px 0;font-size:13px">暂无往期记录</p>';
+  } else {
+    var showAll = get('podcast_show_all', false);
+    var list = showAll ? past : past.slice(0,5);
+    var htm = list.map(function(h){
+      var ps = Array.isArray(h.pods) ? h.pods : (h.pod ? [h.pod] : []);
+      var items = ps.map(function(p){ return renderPodItem(p, false); }).join('');
+      return '<div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid #f0f0ec"><div style="font-size:11px;color:#bbb;margin-bottom:6px">'+esc(h.date)+'</div>'+items+'</div>';
     }).join('');
-    $('#todayPod').innerHTML = html;
-
-    // 渲染往期精选
-    var past = history.filter(function(h){ return h.date!==today; });
-    if(past.length===0){
-      $('#historyPod').innerHTML = '<p style="text-align:center;color:#bbb;padding:16px 0;font-size:13px">暂无往期记录</p>';
-    } else {
-      var showAll = get('podcast_show_all', false);
-      var list = showAll ? past : past.slice(0,5);
-      var htm = list.map(function(h){
-        var items = h.pods.map(function(p){ return renderPodItem(p, false); }).join('');
-        return '<div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid #f0f0ec"><div style="font-size:11px;color:#bbb;margin-bottom:6px">'+esc(h.date)+'</div>'+items+'</div>';
-      }).join('');
-      if(past.length>5){
-        htm += '<button id="podToggle" style="display:block;width:100%;padding:10px;background:#f0f0ec;border:none;border-radius:8px;font-size:12.5px;color:#666;cursor:pointer;margin-top:4px">'+(showAll?'收起':'查看全部 ('+past.length+'期)')+'</button>';
-      }
-      $('#historyPod').innerHTML = htm;
-      var toggle = $('#podToggle');
-      if(toggle){
-        toggle.addEventListener('click',function(){
-          set('podcast_show_all', !get('podcast_show_all',false));
-          loadBlog();
-        });
-      }
+    if(past.length>5){
+      htm += '<button id="podToggle" style="display:block;width:100%;padding:10px;background:#f0f0ec;border:none;border-radius:8px;font-size:12.5px;color:#666;cursor:pointer;margin-top:4px">'+(showAll?'收起':'查看全部 ('+past.length+'期)')+'</button>';
+    }
+    $('#historyPod').innerHTML = htm;
+    var toggle = $('#podToggle');
+    if(toggle){
+      toggle.addEventListener('click',function(){
+        set('podcast_show_all', !get('podcast_show_all',false));
+        loadBlog();
+      });
     }
   }
 }
