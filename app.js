@@ -1137,89 +1137,193 @@ function loadFinTax(){
 
 /* ========== 10. 博客 ========== */
 function renderBlog(){
-  var html = hero('工作台❤️','播客','精选财经播客，随时收听','每日推荐不覆盖，历史随时查看');
-  // 今日推荐
+  var html = hero('工作台❤️','播客','精选理财播客，每日推送','得到 / 小宇宙 / Apple Podcasts');
+  // 今日推荐（三个平台各一条）
   html += '<section class="card"><h2 class="card-title"><span class="dot" style="background:#e8a84b"></span>今日推荐</h2>';
   html += '<div id="todayPod"><div class="news-loading">加载中...</div></div></section>';
   // 往期精选
-  html += '<section class="card"><h2 class="card-title"><span class="dot" style="background:#6a7a8f"></span>往期精选（点击查看）</h2>';
+  html += '<section class="card"><h2 class="card-title"><span class="dot" style="background:#6a7a8f"></span>往期精选（点击收听）</h2>';
   html += '<div id="historyPod"></div></section>';
   return html;
 }
 
-// 播客精选库（每日随机推 1 条，不重复推送）
-var PODCAST_POOL = [
-  {src:'得到',title:'《薛兆丰的经济学课》',app:'得到App',url:'https://www.dedao.cn/course/article.aspx?id=127',desc:'用经济学思维看世界',appIcon:'D'},
-  {src:'得到',title:'《香帅的北大金融学》',app:'得到App',url:'https://www.dedao.cn/course/article.aspx?id=29',desc:'北大金融学通俗讲解',appIcon:'D'},
-  {src:'得到',title:'《刘润·5分钟商学院》',app:'得到App',url:'https://www.dedao.cn/course/article.aspx?id=61',desc:'商业与财经思维',appIcon:'D'},
-  {src:'小宇宙',title:'《搞钱女孩》',app:'小宇宙App',url:'https://www.xiaoyuzhoufm.com/podcast/6270a65be39e7a592e9e4e6c',desc:'女性理财成长播客',appIcon:'宇'},
-  {src:'小宇宙',title:'《商业就是这样》',app:'小宇宙App',url:'https://www.xiaoyuzhoufm.com/podcast/60d273c6b8a3e287edf8d3a3',desc:'商业财经深度解读',appIcon:'宇'},
-  {src:'小宇宙',title:'《投资ABC》',app:'小宇宙App',url:'https://www.xiaoyuzhoufm.com/podcast/615f0f0e45defa0aaf7c1f3c',desc:'投资入门与进阶',appIcon:'宇'},
-  {src:'小宇宙',title:'《钱粮说》',app:'小宇宙App',url:'https://www.xiaoyuzhoufm.com/podcast/6407a7ee9c82a42ee3c2ee3d',desc:'宏观经济与理财',appIcon:'宇'},
-  {src:'Apple Podcasts',title:'财经一小时（有声版）',app:'播客App',url:'podcasts://https://podcasts.apple.com/cn/podcast/id1492659142',desc:'每日财经新闻播客',appIcon:'播'},
-  {src:'小宇宙',title:'《无人知晓》',app:'小宇宙App',url:'https://www.xiaoyuzhoufm.com/podcast/60e1aaf8b8a3e287edf8d3a2',desc:'投资与人生思考',appIcon:'宇'},
-  {src:'得到',title:'《何凡·北大金融学》',app:'得到App',url:'https://www.dedao.cn/course/article.aspx?id=30',desc:'金融思维启蒙',appIcon:'D'},
-  {src:'小宇宙',title:'《半途而废》',app:'小宇宙App',url:'https://www.xiaoyuzhoufm.com/podcast/6270a6f5e39e7a592e9e4e6d',desc:'创业与投资故事',appIcon:'宇'},
-  {src:'Apple Podcasts',title:'商业财经精选',app:'播客App',url:'podcasts://https://podcasts.apple.com/cn/genre/podcasts-finance/id1512',desc:'Apple 财经分类精选',appIcon:'播'}
+/* ====== 播客 RSS 源 ====== */
+// 小宇宙 RSS feeds (feed.xyzfm.space)
+var PODCAST_FEEDS = [
+  // 小宇宙平台
+  {platform:'小宇宙',show:'知行小酒馆',rss:'https://feed.xyzfm.space/j8yp8gxkmgqr',app:'小宇宙App',appUrl:'https://www.xiaoyuzhoufm.com/podcast/6013f9f58e2f7ee375cf4216',icon:'宇',color:'#5b8def'},
+  {platform:'小宇宙',show:'起朱楼宴宾客',rss:'https://feed.xyzfm.space/ahng8d9qlywl',app:'小宇宙App',appUrl:'https://www.xiaoyuzhoufm.com/podcast/64fd0af374608e56758439d4',icon:'宇',color:'#5b8def'},
+  {platform:'小宇宙',show:'晨星投资说',rss:'https://feed.xyzfm.space/ycg38fx8tett',app:'小宇宙App',appUrl:'https://www.xiaoyuzhoufm.com/podcast/60d273c6b8a3e287edf8d3a3',icon:'宇',color:'#5b8def'},
+  {platform:'小宇宙',show:'投资实战派',rss:'https://feed.xyzfm.space/rgnq4rbx9tpv',app:'小宇宙App',appUrl:'https://www.xiaoyuzhoufm.com/podcast/615f0f0e45defa0aaf7c1f3c',icon:'宇',color:'#5b8def'},
+  // WavPub / 喜马拉雅托管（也出现在 Apple Podcasts）
+  {platform:'Apple Podcasts',show:'半拿铁|商业沉浮录',rss:'https://proxy.wavpub.com/caffebreve.xml',app:'播客App',appUrl:'podcasts://https://podcasts.apple.com/cn/podcast/id1615939013',icon:'播',color:'#333'},
+  {platform:'Apple Podcasts',show:'搞钱女孩',rss:'https://www.ximalaya.com/album/74797134.xml',app:'播客App',appUrl:'podcasts://https://podcasts.apple.com/cn/podcast/id1676099257',icon:'播',color:'#333'},
+  {platform:'Apple Podcasts',show:'商业就是这样',rss:'http://www.ximalaya.com/album/46587439.xml',app:'播客App',appUrl:'podcasts://https://podcasts.apple.com/cn/podcast/id1552904790',icon:'播',color:'#333'},
+  // 得到（无 RSS，用固定精选课程轮换）
+  {platform:'得到',show:'薛兆丰的经济学课',rss:'',app:'得到App',appUrl:'https://www.dedao.cn/course/article.aspx?id=127',icon:'D',color:'#9b6acf',desc:'用经济学思维看世界',staticTitle:'薛兆丰的经济学课'},
+  {platform:'得到',show:'香帅的北大金融学课',rss:'',app:'得到App',appUrl:'https://www.dedao.cn/course/article.aspx?id=29',icon:'D',color:'#9b6acf',desc:'北大金融学通俗讲解',staticTitle:'香帅的北大金融学课'},
+  {platform:'得到',show:'刘润·5分钟商学院',rss:'',app:'得到App',appUrl:'https://www.dedao.cn/course/article.aspx?id=61',icon:'D',color:'#9b6acf',desc:'商业与财经思维',staticTitle:'刘润·5分钟商学院'},
+  {platform:'得到',show:'何凡·北大金融学课',rss:'',app:'得到App',appUrl:'https://www.dedao.cn/course/article.aspx?id=30',icon:'D',color:'#9b6acf',desc:'金融思维启蒙',staticTitle:'何凡·北大金融学课'}
 ];
 
 function loadBlog(){
   var today = todayKey();
-  var history = get('podcast_history',[]); // [{date, pod:{...}}]
+  var history = get('podcast_history',[]); // [{date, pods:[{platform,show,title,desc,url,appUrl,icon,color}]}]
   var todayEntry = history.find(function(h){ return h.date===today; });
 
   if(!todayEntry){
-    // 今天还没推送，从池中选一个未推送过的
-    var pushed = {}; history.forEach(function(h){ pushed[h.pod.title]=true; });
-    var remaining = PODCAST_POOL.filter(function(p){ return !pushed[p.title]; });
-    var pool = remaining.length>0 ? remaining : PODCAST_POOL; // 全部推送完则重来
-    var pick = pool[Math.floor(Math.random()*pool.length)];
-    todayEntry = {date:today, pod:pick};
-    history.unshift(todayEntry);
-    // 只保留最近 100 条
-    if(history.length>100) history = history.slice(0,100);
-    set('podcast_history', history);
-  }
+    // 今天还没推送，从三个平台各选一条
+    var pods = [];
 
-  // 渲染今日推荐
-  var s = todayEntry.pod;
-  $('#todayPod').innerHTML = '<div style="display:flex;align-items:center;gap:10px;padding:8px 0">'+
-    '<span style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;background:'+(s.src==='得到'?'#9b6acf':s.src==='小宇宙'?'#5b8def':'#333')+';color:#fff;font-size:16px;font-weight:700;flex-shrink:0">'+esc(s.appIcon)+'</span>'+
-    '<span style="flex:1"><span style="display:block;font-size:14px;color:#1f1f1f;line-height:1.4">'+esc(s.title)+'</span><span style="display:block;font-size:12px;color:#999;margin-top:2px">'+esc(s.desc)+'</span></span>'+
-  '</div>'+
-  '<a href="'+esc(s.url)+'" '+(s.url.indexOf('http')===0?'target="_blank"':'')+' style="display:block;text-align:center;padding:10px;background:#f0f0ec;border-radius:10px;font-size:13px;color:#6a7a8f;text-decoration:none;margin-top:8px">跳转至 '+esc(s.app)+' ›</a>';
+    // 1. 得到：轮换选取
+    var dedaoFeeds = PODCAST_FEEDS.filter(function(f){ return f.platform==='得到'; });
+    var dedaoIdx = history.length % dedaoFeeds.length;
+    var dedao = dedaoFeeds[dedaoIdx];
+    pods.push({
+      platform:'得到', show:dedao.show, title:dedao.staticTitle,
+      desc:dedao.desc, url:dedao.appUrl, appUrl:dedao.appUrl,
+      app:'得到App', icon:'D', color:'#9b6acf'
+    });
 
-  // 渲染往期精选
-  var past = history.filter(function(h){ return h.date!==today; });
-  if(past.length===0){
-    $('#historyPod').innerHTML = '<p style="text-align:center;color:#bbb;padding:16px 0;font-size:13px">暂无往期记录</p>';
-  } else {
-    // 默认只显示前 3 条，点击展开全部
-    var showAll = get('podcast_show_all', false);
-    var list = showAll ? past : past.slice(0,3);
-    var html = list.map(function(h){
-      var p = h.pod;
-      return '<div class="news-item">'+
-        '<div style="font-size:11px;color:#bbb;margin-bottom:4px">'+esc(h.date)+'</div>'+
-        '<a href="'+esc(p.url)+'" '+(p.url.indexOf('http')===0?'target="_blank"':'')+' style="display:flex;align-items:center;gap:10px;text-decoration:none">'+
-          '<span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:'+(p.src==='得到'?'#9b6acf':p.src==='小宇宙'?'#5b8def':'#333')+';color:#fff;font-size:14px;font-weight:700;flex-shrink:0">'+esc(p.appIcon)+'</span>'+
-          '<span style="flex:1"><span style="display:block;font-size:13px;color:#1f1f1f;line-height:1.4">'+esc(p.title)+'</span><span style="display:block;font-size:11px;color:#999;margin-top:2px">'+esc(p.desc)+'</span></span>'+
-        '</a>'+
-        '<div style="font-size:11px;color:#6a7a8f;margin-top:4px;padding-left:42px">跳转至 '+esc(p.app)+' ›</div>'+
-      '</div>';
-    }).join('');
-    if(past.length>3){
-      html += '<button id="podToggle" style="display:block;width:100%;padding:10px;background:#f0f0ec;border:none;border-radius:8px;font-size:12.5px;color:#666;cursor:pointer;margin-top:4px">'+(showAll?'收起':'查看全部 ('+past.length+'期)')+'</button>';
-    }
-    $('#historyPod').innerHTML = html;
-    var toggle = $('#podToggle');
-    if(toggle){
-      toggle.addEventListener('click',function(){
-        set('podcast_show_all', !get('podcast_show_all',false));
-        loadBlog();
+    // 2. 小宇宙 + Apple Podcasts：通过 RSS 抓取最新一期
+    var rssFeeds = PODCAST_FEEDS.filter(function(f){ return f.rss; });
+    var shuffled = rssFeeds.sort(function(){ return Math.random()-0.5; });
+    // 尝试抓取，每个平台至少一条
+    var xiaoyuzhouPicked = false, applePicked = false;
+    var pickIdx = 0;
+
+    function tryFetchNext(){
+      if(pickIdx >= shuffled.length || (xiaoyuzhouPicked && applePicked)){
+        finishLoad(pods);
+        return;
+      }
+      var feed = shuffled[pickIdx++];
+      var needThis = (feed.platform==='小宇宙' && !xiaoyuzhouPicked) || (feed.platform==='Apple Podcasts' && !applePicked);
+      // 如果该平台已选过，跳过
+      if((feed.platform==='小宇宙' && xiaoyuzhouPicked) || (feed.platform==='Apple Podcasts' && applePicked)){
+        tryFetchNext();
+        return;
+      }
+      fetchRSSPodcast(feed, function(item){
+        if(item){
+          if(feed.platform==='小宇宙') xiaoyuzhouPicked = true;
+          if(feed.platform==='Apple Podcasts') applePicked = true;
+          pods.push(item);
+        }
+        tryFetchNext();
       });
     }
+
+    // 同时发起前几个请求加速
+    var xiaoyuzhouFeeds = shuffled.filter(function(f){ return f.platform==='小宇宙'; });
+    var appleFeeds = shuffled.filter(function(f){ return f.platform==='Apple Podcasts'; });
+
+    // 随机选一个小宇宙和一个 Apple
+    var xyFeed = xiaoyuzhouFeeds[0];
+    var apFeed = appleFeeds[0];
+    var pending = 0;
+    var results = {};
+
+    if(xyFeed){ pending++; fetchRSSPodcast(xyFeed, function(item){ results.xy = item; if(--pending===0) finishLoad2(pods, results); }); }
+    if(apFeed){ pending++; fetchRSSPodcast(apFeed, function(item){ results.ap = item; if(--pending===0) finishLoad2(pods, results); }); }
+    if(pending===0) finishLoad2(pods, results);
+
+    function finishLoad2(pods, results){
+      if(results.xy) pods.push(results.xy);
+      if(results.ap) pods.push(results.ap);
+      finishLoad(pods);
+    }
+  } else {
+    finishLoad(todayEntry.pods);
   }
+
+  function finishLoad(pods){
+    // 保存到历史
+    if(!todayEntry){
+      todayEntry = {date:today, pods:pods};
+      history.unshift(todayEntry);
+      if(history.length>200) history = history.slice(0,200);
+      set('podcast_history', history);
+    }
+
+    // 渲染今日推荐
+    var html = pods.map(function(p){
+      return renderPodItem(p, true);
+    }).join('');
+    $('#todayPod').innerHTML = html;
+
+    // 渲染往期精选
+    var past = history.filter(function(h){ return h.date!==today; });
+    if(past.length===0){
+      $('#historyPod').innerHTML = '<p style="text-align:center;color:#bbb;padding:16px 0;font-size:13px">暂无往期记录</p>';
+    } else {
+      var showAll = get('podcast_show_all', false);
+      var list = showAll ? past : past.slice(0,5);
+      var htm = list.map(function(h){
+        var items = h.pods.map(function(p){ return renderPodItem(p, false); }).join('');
+        return '<div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid #f0f0ec"><div style="font-size:11px;color:#bbb;margin-bottom:6px">'+esc(h.date)+'</div>'+items+'</div>';
+      }).join('');
+      if(past.length>5){
+        htm += '<button id="podToggle" style="display:block;width:100%;padding:10px;background:#f0f0ec;border:none;border-radius:8px;font-size:12.5px;color:#666;cursor:pointer;margin-top:4px">'+(showAll?'收起':'查看全部 ('+past.length+'期)')+'</button>';
+      }
+      $('#historyPod').innerHTML = htm;
+      var toggle = $('#podToggle');
+      if(toggle){
+        toggle.addEventListener('click',function(){
+          set('podcast_show_all', !get('podcast_show_all',false));
+          loadBlog();
+        });
+      }
+    }
+  }
+}
+
+// 渲染单个播客条目
+function renderPodItem(p, isToday){
+  var bg = p.color || '#6a7a8f';
+  var html = '<div style="display:flex;align-items:flex-start;gap:10px;padding:'+(isToday?'10px 0':'8px 0')+';border-bottom:1px solid #f5f5f0">'+
+    '<span style="display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;background:'+bg+';color:#fff;font-size:14px;font-weight:700;flex-shrink:0">'+esc(p.icon||p.platform.charAt(0))+'</span>'+
+    '<span style="flex:1;min-width:0">'+
+      '<span style="display:block;font-size:11px;color:'+bg+';font-weight:600;margin-bottom:2px">'+esc(p.platform)+' · '+esc(p.show||'')+'</span>'+
+      '<span style="display:block;font-size:'+(isToday?'14px':'13px')+';color:#1f1f1f;line-height:1.4">'+esc(p.title)+'</span>';
+  if(p.desc) html += '<span style="display:block;font-size:12px;color:#999;margin-top:2px;line-height:1.3">'+esc(p.desc)+'</span>';
+  html += '</span></div>';
+  // 跳转按钮
+  var url = p.appUrl || p.url || '';
+  var isHttp = url.indexOf('http')===0;
+  html += '<a href="'+esc(url)+'" '+(isHttp?'target="_blank"':'')+' style="display:block;text-align:center;padding:8px;background:#f5f3ed;border-radius:8px;font-size:12.5px;color:'+bg+';text-decoration:none;margin-top:4px">跳转至 '+esc(p.app||p.platform)+' ›</a>';
+  return html;
+}
+
+// 通过 RSS2JSON 抓取播客最新一期
+function fetchRSSPodcast(feed, callback){
+  var api = 'https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(feed.rss);
+  var done = false;
+  // 超时保护：8秒后返回 null
+  var timer = setTimeout(function(){
+    if(!done){ done=true; callback(null); }
+  }, 8000);
+  fetch(api).then(function(r){ return r.json(); }).then(function(data){
+    if(done) return;
+    done = true;
+    clearTimeout(timer);
+    if(data && data.items && data.items.length>0){
+      var item = data.items[0];
+      callback({
+        platform: feed.platform,
+        show: feed.show,
+        title: item.title || feed.show,
+        desc: (item.description||'').replace(/<[^>]+>/g,'').slice(0,60),
+        url: item.link || feed.appUrl,
+        appUrl: feed.appUrl,
+        app: feed.app,
+        icon: feed.icon,
+        color: feed.color
+      });
+    } else {
+      callback(null);
+    }
+  }).catch(function(){ if(!done){ done=true; clearTimeout(timer); callback(null); } });
 }
 
 /* ========== 11. 读书计划 ========== */
