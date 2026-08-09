@@ -692,7 +692,7 @@ function renderFinance(){
   html += '<section class="card" style="background:linear-gradient(135deg,#d93025,#e85a4f)"><h2 class="card-title" style="color:#fff"><span class="dot" style="background:#fff"></span>新浪财经电台</h2>';
   html += '<div style="color:#fff;line-height:1.6;margin-bottom:12px;font-size:13px">实时财经广播，边听边看行情</div>';
   html += '<div style="display:flex;gap:8px;flex-wrap:wrap">';
-  html += '<a href="sinanews://finance.sina.cn/open" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#fff;color:#d93025;border-radius:10px;font-size:13px;font-weight:600;text-decoration:none">打开新浪财经App ›</a>';
+  html += '<a href="sinafinance://" onclick="return openSinaFinance(this)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#fff;color:#d93025;border-radius:10px;font-size:13px;font-weight:600;text-decoration:none">打开新浪财经App ›</a>';
   html += '<a href="https://finance.sina.cn/" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:rgba(255,255,255,.2);color:#fff;border:1.5px solid rgba(255,255,255,.5);border-radius:10px;font-size:13px;text-decoration:none">财经首页 ›</a>';
   html += '<a href="https://tzxy.sina.com.cn/kuaixun" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:rgba(255,255,255,.2);color:#fff;border:1.5px solid rgba(255,255,255,.5);border-radius:10px;font-size:13px;text-decoration:none">7x24快讯 ›</a>';
   html += '<a href="https://www.qingting.fm/podcasters/b6d319a6b3db4089be9dda6454110816" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:rgba(255,255,255,.2);color:#fff;border:1.5px solid rgba(255,255,255,.5);border-radius:10px;font-size:13px;text-decoration:none">蜻蜓FM电台 ›</a>';
@@ -1300,6 +1300,20 @@ function renderMovie(){
 }
 
 /* ========== 电子小猫咪 ========== */
+function openSinaFinance(el){
+  var scheme = 'sinafinance://';
+  var now = Date.now();
+  // 尝试唤起新浪财经App
+  window.location.href = scheme;
+  // 如果300ms后仍在当前页，说明scheme未生效，跳转到universal link（H5页面）
+  setTimeout(function(){
+    if (Date.now() - now < 600) {
+      window.location.href = 'https://finance.sina.cn/';
+    }
+  }, 300);
+  return false;
+}
+
 function initCat(){
   var food = get('cat_food',0);
   updateCatUI(food);
