@@ -695,7 +695,6 @@ function renderFinance(){
   html += '<a href="sinafinance://" onclick="return openSinaFinance(this)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:#fff;color:#d93025;border-radius:10px;font-size:13px;font-weight:600;text-decoration:none">打开新浪财经App ›</a>';
   html += '<a href="https://finance.sina.cn/" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:rgba(255,255,255,.2);color:#fff;border:1.5px solid rgba(255,255,255,.5);border-radius:10px;font-size:13px;text-decoration:none">财经首页 ›</a>';
   html += '<a href="https://tzxy.sina.com.cn/kuaixun" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:rgba(255,255,255,.2);color:#fff;border:1.5px solid rgba(255,255,255,.5);border-radius:10px;font-size:13px;text-decoration:none">7x24快讯 ›</a>';
-  html += '<a href="https://www.qingting.fm/podcasters/b6d319a6b3db4089be9dda6454110816" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:rgba(255,255,255,.2);color:#fff;border:1.5px solid rgba(255,255,255,.5);border-radius:10px;font-size:13px;text-decoration:none">蜻蜓FM电台 ›</a>';
   html += '</div></section>';
 
   html += '<section class="card"><h2 class="card-title"><span class="dot" style="background:#4ba87a"></span>雪球大V基金配置参考</h2>';
