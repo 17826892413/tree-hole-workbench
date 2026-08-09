@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>树洞 · 工作台</title>
+<title>工作台❤️</title>
 <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
 
-<!-- 顶部状态栏 (模拟) -->
+<!-- 顶部状态栏 -->
 <div class="status-bar">
   <span class="status-time">16:11</span>
   <span class="status-icons">
@@ -19,10 +19,7 @@
   </span>
 </div>
 
-<!-- 左侧导航 + 右侧主区 -->
 <div class="app">
-
-  <!-- 左侧菜单 -->
   <aside class="sidebar">
     <div class="sidebar-top">
       <span class="clock" id="realTime">10:30</span>
@@ -33,116 +30,12 @@
       </div>
     </div>
 
-    <nav class="menu">
-      <a class="menu-item" href="#"><svg viewBox="0 0 24 24"><path d="M7 2v2H3v18h18V4h-4V2H7zm10 4V4h0v2h-2V4H9v2h8zM5 6h2v2h10V6h2v14H5V6z"/></svg><span>每日计划</span></a>
-      <a class="menu-item" href="#"><svg viewBox="0 0 24 24"><path d="M16 4l-1.4 1.4L17.2 8H6v2h11.2l-2.6 2.6L16 14l5-5-5-5zM4 6H2v14h16v-2H4V6z"/></svg><span>每日穿搭</span></a>
-      <a class="menu-item" href="#"><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.35-7-10a5 5 0 019-3 5 5 0 019 3c0 5.65-7 10-7 10z" fill="none" stroke="#444" stroke-width="1.6"/></svg><span>心情</span></a>
-      <a class="menu-item" href="#"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="#444" stroke-width="1.6"/><path d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18" fill="none" stroke="#444" stroke-width="1.6"/></svg><span>英语学习</span></a>
-      <a class="menu-item" href="#"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="#444" stroke-width="1.6"/><path d="M11 9h2v6h-2z" fill="#444"/></svg><span>记账存钱</span></a>
-      <a class="menu-item" href="#"><svg viewBox="0 0 24 24"><path d="M4 4h6v16H4zM14 4h6v16h-6z" fill="none" stroke="#444" stroke-width="1.6"/></svg><span>读书记录</span></a>
-      <a class="menu-item" href="#"><svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.5" fill="none" stroke="#444" stroke-width="1.6"/><circle cx="18" cy="6" r="2.5" fill="none" stroke="#444" stroke-width="1.6"/><circle cx="12" cy="18" r="2.5" fill="none" stroke="#444" stroke-width="1.6"/><path d="M8 8l3 8M16 8l-3 8" stroke="#444" stroke-width="1.6"/></svg><span>运动锻炼</span></a>
-      <a class="menu-item" href="#"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5" fill="none" stroke="#444" stroke-width="1.6"/><path d="M5 21a7 7 0 0114 0" fill="none" stroke="#444" stroke-width="1.6"/></svg><span>亲子启蒙</span></a>
-      <a class="menu-item" href="#"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="12" rx="2" fill="none" stroke="#444" stroke-width="1.6"/><path d="M3 11h18M7 16h4" stroke="#444" stroke-width="1.6"/></svg><span>存钱计划</span></a>
-      <a class="menu-item active" href="#">
-        <span class="menu-active-pill">
-          <svg viewBox="0 0 24 24"><path d="M12 2L4 5v6c0 5 3.5 9.5 8 11 4.5-1.5 8-6 8-11V5l-8-3z" fill="none" stroke="#fff" stroke-width="1.8"/></svg>
-          <span>树洞</span>
-        </span>
-      </a>
-    </nav>
+    <nav class="menu" id="menu"></nav>
   </aside>
 
-  <!-- 主内容 -->
-  <main class="main">
-
-    <!-- Header -->
-    <section class="hero">
-      <h1>树洞</h1>
-      <p class="sub">说给树洞听 · 安全又温暖</p>
-
-      <div class="hero-card">
-        <svg class="tree-svg" viewBox="0 0 64 64" width="72" height="72" aria-hidden="true">
-          <ellipse cx="32" cy="48" rx="14" ry="3" fill="#7fb46a" opacity=".25"/>
-          <path d="M30 32 L30 56 L34 56 L34 32 Z" fill="#7a5a3a"/>
-          <path d="M32 14 C20 14 14 22 14 30 C14 34 16 37 19 39 C17 41 16 44 17 47 C18 50 22 51 25 50 C26 53 29 55 32 55 C35 55 38 53 39 50 C42 51 46 50 47 47 C48 44 47 41 45 39 C48 37 50 34 50 30 C50 22 44 14 32 14 Z" fill="#9bd07d"/>
-          <path d="M32 14 C24 14 18 19 16 26 C20 22 25 20 31 20 C37 20 42 22 46 26 C45 21 42 17 38 15 C36 14 34 14 32 14 Z" fill="#b6de9a"/>
-          <circle cx="26" cy="24" r="3" fill="#7eb963"/>
-          <circle cx="38" cy="22" r="3" fill="#7eb963"/>
-          <circle cx="42" cy="30" r="3" fill="#7eb963"/>
-          <circle cx="22" cy="32" r="3" fill="#7eb963"/>
-          <circle cx="30" cy="38" r="2.5" fill="#7eb963"/>
-          <circle cx="36" cy="40" r="2.5" fill="#7eb963"/>
-        </svg>
-        <p class="quote">在这里，你可以倾诉任何心事。</p>
-        <p class="quote quiet">所有内容只保存在你的手机上，无人知晓。</p>
-      </div>
-    </section>
-
-    <!-- 写下心事 -->
-    <section class="card write-card">
-      <h2 class="card-title">
-        <svg class="title-icon" viewBox="0 0 24 24" width="20" height="20"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="#3a3a3a"/></svg>
-        写下你的心事
-      </h2>
-      <textarea placeholder="今天想说点什么..."></textarea>
-
-      <div class="mood-grid">
-        <button class="mood"><span class="emo">😊</span>开心</button>
-        <button class="mood"><span class="emo">😢</span>难过</button>
-        <button class="mood"><span class="emo">😰</span>焦虑</button>
-        <button class="mood"><span class="emo">😡</span>愤怒</button>
-        <button class="mood"><span class="emo">😐</span>迷茫</button>
-        <button class="mood"><span class="emo">🥰</span>感恩</button>
-      </div>
-
-      <button class="btn-primary">投递 给树洞</button>
-    </section>
-
-    <!-- 树洞回信 -->
-    <section class="card reply-card">
-      <h2 class="card-title">
-        <svg class="title-icon" viewBox="0 0 24 24" width="20" height="20"><rect x="3" y="5" width="18" height="14" rx="2" fill="#ffd9d9"/><path d="M3 7l9 7 9-7" fill="none" stroke="#d34a4a" stroke-width="1.6"/></svg>
-        树洞回信
-      </h2>
-      <div class="reply-body">
-        <p class="reply-text">嗯，我都听到了。<br>今晚的月色很美，记得早点休息 🌙</p>
-      </div>
-    </section>
-
-    <!-- 心事记录 -->
-    <section class="card record-card">
-      <div class="record-head">
-        <h2 class="card-title">
-          <svg class="title-icon" viewBox="0 0 24 24" width="20" height="20"><path d="M4 4h6v16H4zM14 4h6v16h-6z" fill="none" stroke="#3a3a3a" stroke-width="1.6"/><path d="M6 8h2M6 12h2M16 8h2M16 12h2" stroke="#3a3a3a" stroke-width="1.6"/></svg>
-          心事记录
-        </h2>
-        <button class="btn-clear">清空</button>
-      </div>
-      <p class="empty">还没有心事记录~</p>
-    </section>
-
-    <footer class="foot">
-      <svg class="foot-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-        <path d="M14 3v2h-2V3H8v2H6v14h12V5h-2V3h-2zm0 4h-4V5h4v2z" fill="#8a8a8a"/>
-      </svg>
-      抖音号：20339773189
-    </footer>
-
-  </main>
+  <main class="main" id="main"></main>
 </div>
 
-<script>
-  // 简单更新左上角时间
-  function updateTime(){
-    const d = new Date();
-    const hh = String(d.getHours()).padStart(2,'0');
-    const mm = String(d.getMinutes()).padStart(2,'0');
-    const el = document.getElementById('realTime');
-    if(el) el.textContent = `${hh}:${mm}`;
-  }
-  updateTime();
-  setInterval(updateTime, 30*1000);
-</script>
-
+<script src="app.js"></script>
 </body>
 </html>
